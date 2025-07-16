@@ -63,6 +63,7 @@ export default {
     i: 0,
     chs: null,
     chsdts: [],
+    // notyf_indxs: [],
     editedIndex: null,
     editedItem: "",
     dialog: false,
@@ -95,24 +96,36 @@ export default {
             desc: new TextDecoder().decode(dV.buffer),
             value: new TextDecoder().decode(v.buffer)
           }
-          this.chsdts.push(chsdt);
           if (this.chs[this.i].properties.notify) {
-            const li = this.i;
+            await this.chs[this.i].startNotifications();
             this.chs[this.i].addEventListener('characteristicvaluechanged', (evt, err) => {
+              this.chsdts[this.i].value = new TextDecoder().decode(evt.target.value);
               if (err) {
                 console.log('error: ', err);
                 return;
               }
-              this.chsdts[li].value = new TextDecoder().decode(evt.target.value);
             });
-            this.chs[this.i].startNotifications();
           }
+          // this.notyf_indxs.push(this.i);
+          this.chsdts.push(chsdt);
           this.i++;
           this.readCharacteristics();
         }
         else {
           // this.chs[this.i - 1].writeValue(new TextEncoder().encode("215")).then(() => { console.log("New value is written!") })
           this.i = 0;
+          // if (this.notyf_indxs.length > 0) {
+          //   for (var j in this.notyf_indxs) {
+          //     await this.chs[j].startNotifications();
+          //     this.chs[j].addEventListener('characteristicvaluechanged', (evt, err) => {
+          //       this.chsdts[j].value = new TextDecoder().decode(evt.target.value);
+          //       if (err) {
+          //         console.log('error: ', err);
+          //         return;
+          //       }
+          //     });
+          //   }
+          // }
         }
       }
       catch (error) {
@@ -124,16 +137,18 @@ export default {
         if (this.btDev.gatt.connected) {
           this.manualConn = true;
           this.btDev.gatt.disconnect();
+          this.chsdts = [];
         }
       } else this.reqdev();
     },
     ondisc: function () {
-        this.chsdts = [];
-        this.btDev = null;
-        this.snktxt("Устройство ", "отключено");
-        this.snackshow = true;
+      this.chsdts = [];
+      this.btDev = null;
+      this.snktxt("Устройство ", "отключено");
+      this.snackshow = true;
       if (this.manualConn) {
         this.manualConn = false;
+        this.chsdts = [];
         this.reqdev();
       }
     },
