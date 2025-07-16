@@ -98,15 +98,16 @@ export default {
           }
           if (this.chs[this.i].properties.notify) {
             await this.chs[this.i].startNotifications();
+            const lc_i = this.i;
+            // this.notyf_indxs.push(this.i);
             this.chs[this.i].addEventListener('characteristicvaluechanged', (evt, err) => {
-              this.chsdts[this.i].value = new TextDecoder().decode(evt.target.value);
+              this.chsdts[lc_i].value = new TextDecoder().decode(evt.target.value);
               if (err) {
                 console.log('error: ', err);
                 return;
               }
             });
           }
-          // this.notyf_indxs.push(this.i);
           this.chsdts.push(chsdt);
           this.i++;
           this.readCharacteristics();
